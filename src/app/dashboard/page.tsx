@@ -86,7 +86,7 @@ export default function DashboardPage() {
             <div>
               <h4 className="text-sm font-medium text-blue-900 mb-1">Mock System Active</h4>
               <p className="text-sm text-blue-700">
-                Reviews are stored in memory. When you refresh, they'll reset. Connect a real database for persistence.
+                Reviews are stored in memory. When you refresh, they&apos;ll reset. Connect a real database for persistence.
               </p>
             </div>
           </div>

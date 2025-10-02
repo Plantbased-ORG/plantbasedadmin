@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // This is a mock in-memory store. Replace with your actual database later
-let testimonials = [
+const testimonials = [
   {
     id: '1',
     name: 'Sarah Johnson',
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     testimonials.push(newTestimonial);
 
     return NextResponse.json(newTestimonial, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to add testimonial' },
       { status: 500 }
