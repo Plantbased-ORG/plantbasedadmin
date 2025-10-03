@@ -6,10 +6,11 @@ import DashboardHeader from '@/components/DashboardHeader';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 import AddReviewForm from '@/components/AddReviewForm';
 import AddProductForm from '@/components/AddProductForm';
+import AddPricingPlanForm from '@/components/AddPricingPlanForm';
 
 export default function DashboardPage() {
   const [userEmail, setUserEmail] = useState('');
-  const [activeTab, setActiveTab] = useState<'programs' | 'reviews' | 'password'>('programs');
+  const [activeTab, setActiveTab] = useState<'programs' | 'pricing' | 'reviews' | 'password'>('programs');
   const router = useRouter();
 
   useEffect(() => {
@@ -37,15 +38,15 @@ export default function DashboardPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg p-6 mb-8 text-white">
           <h2 className="text-2xl font-bold mb-2">Welcome back!</h2>
-          <p className="text-purple-100">Manage healing programs, reviews, and account settings.</p>
+          <p className="text-purple-100">Manage healing programs, pricing plans, reviews, and settings.</p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="flex border-b border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm mb-6 overflow-x-auto">
+          <div className="flex border-b border-gray-200 min-w-max">
             <button
               onClick={() => setActiveTab('programs')}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition ${
+              className={`flex-1 px-6 py-4 text-sm font-medium transition whitespace-nowrap ${
                 activeTab === 'programs'
                   ? 'border-b-2 border-purple-600 text-purple-600'
                   : 'text-gray-500 hover:text-gray-700'
@@ -59,8 +60,23 @@ export default function DashboardPage() {
               </span>
             </button>
             <button
+              onClick={() => setActiveTab('pricing')}
+              className={`flex-1 px-6 py-4 text-sm font-medium transition whitespace-nowrap ${
+                activeTab === 'pricing'
+                  ? 'border-b-2 border-purple-600 text-purple-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Pricing
+              </span>
+            </button>
+            <button
               onClick={() => setActiveTab('reviews')}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition ${
+              className={`flex-1 px-6 py-4 text-sm font-medium transition whitespace-nowrap ${
                 activeTab === 'reviews'
                   ? 'border-b-2 border-purple-600 text-purple-600'
                   : 'text-gray-500 hover:text-gray-700'
@@ -75,7 +91,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab('password')}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition ${
+              className={`flex-1 px-6 py-4 text-sm font-medium transition whitespace-nowrap ${
                 activeTab === 'password'
                   ? 'border-b-2 border-purple-600 text-purple-600'
                   : 'text-gray-500 hover:text-gray-700'
@@ -93,6 +109,7 @@ export default function DashboardPage() {
 
         {/* Tab Content */}
         {activeTab === 'programs' && <AddProductForm />}
+        {activeTab === 'pricing' && <AddPricingPlanForm />}
         {activeTab === 'reviews' && <AddReviewForm />}
         {activeTab === 'password' && <ChangePasswordForm />}
 
