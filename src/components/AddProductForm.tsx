@@ -13,17 +13,17 @@ export default function AddProductForm() {
   const [formData, setFormData] = useState({
     name: '',
     shortDescription: '',
-    mainImage: '',
+    mainImage: null as File | null,
     introDescription: '',
-    mainContentImage: '',
+    mainContentImage: null as File | null,
     whatCauses: '',
-    whatCausesImage: '',
+    whatCausesImage: null as File | null,
     healthRisks: '',
-    healthRisksImage: '',
+    healthRisksImage: null as File | null,
     strategies: '',
-    strategiesImage: '',
+    strategiesImage: null as File | null,
     conclusion: '',
-    conclusionImage: '',
+    conclusionImage: null as File | null,
     pricingPlans: [] as PricingPlan[]
   });
 
@@ -43,6 +43,30 @@ export default function AddProductForm() {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select a valid image file');
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size should not exceed 5MB');
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        [fieldName]: file
+      }));
+    }
   };
 
   const handlePlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,13 +123,42 @@ export default function AddProductForm() {
       return;
     }
 
+    // Check all required images
+    const imageFields = ['mainImage', 'mainContentImage', 'whatCausesImage', 'healthRisksImage', 'strategiesImage', 'conclusionImage'];
+    const missingImages = imageFields.filter(field => !formData[field as keyof typeof formData]);
+    
+    if (missingImages.length > 0) {
+      setError('Please upload all required images');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // Create FormData for file upload
+      const submitData = new FormData();
+      
+      // Add text fields
+      submitData.append('name', formData.name);
+      submitData.append('shortDescription', formData.shortDescription);
+      submitData.append('introDescription', formData.introDescription);
+      submitData.append('whatCauses', formData.whatCauses);
+      submitData.append('healthRisks', formData.healthRisks);
+      submitData.append('strategies', formData.strategies);
+      submitData.append('conclusion', formData.conclusion);
+      submitData.append('pricingPlans', JSON.stringify(formData.pricingPlans));
+
+      // Add image files
+      if (formData.mainImage) submitData.append('mainImage', formData.mainImage);
+      if (formData.mainContentImage) submitData.append('mainContentImage', formData.mainContentImage);
+      if (formData.whatCausesImage) submitData.append('whatCausesImage', formData.whatCausesImage);
+      if (formData.healthRisksImage) submitData.append('healthRisksImage', formData.healthRisksImage);
+      if (formData.strategiesImage) submitData.append('strategiesImage', formData.strategiesImage);
+      if (formData.conclusionImage) submitData.append('conclusionImage', formData.conclusionImage);
+
       const response = await fetch('/api/programs', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: submitData,
       });
 
       if (!response.ok) throw new Error('Failed to add program');
@@ -114,19 +167,26 @@ export default function AddProductForm() {
       setFormData({
         name: '',
         shortDescription: '',
-        mainImage: '',
+        mainImage: null,
         introDescription: '',
-        mainContentImage: '',
+        mainContentImage: null,
         whatCauses: '',
-        whatCausesImage: '',
+        whatCausesImage: null,
         healthRisks: '',
-        healthRisksImage: '',
+        healthRisksImage: null,
         strategies: '',
-        strategiesImage: '',
+        strategiesImage: null,
         conclusion: '',
-        conclusionImage: '',
+        conclusionImage: null,
         pricingPlans: []
       });
+      
+      // Reset file inputs
+      const fileInputs = document.querySelectorAll('input[type="file"]');
+      fileInputs.forEach((input) => {
+        (input as HTMLInputElement).value = '';
+      });
+
       setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -172,18 +232,20 @@ export default function AddProductForm() {
 
               <div>
                 <label htmlFor="mainImage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Card Image URL *
+                  Card Image * (Max 5MB)
                 </label>
                 <input
                   id="mainImage"
                   name="mainImage"
-                  type="url"
-                  value={formData.mainImage}
-                  onChange={handleChange}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'mainImage')}
                   required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900"
-                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200"
                 />
+                {formData.mainImage && (
+                  <p className="text-xs text-green-600 mt-1">✓ {formData.mainImage.name}</p>
+                )}
               </div>
 
               <div>
@@ -204,7 +266,7 @@ export default function AddProductForm() {
             </div>
           </div>
 
-          {/* Detail Page Content - Collapsed for brevity */}
+          {/* Detail Page Content */}
           <details className="border border-gray-200 rounded-lg">
             <summary className="px-4 py-3 cursor-pointer font-medium text-gray-900 hover:bg-gray-50">
               Program Detail Content (Click to expand)
@@ -216,8 +278,9 @@ export default function AddProductForm() {
                 <textarea name="introDescription" value={formData.introDescription} onChange={handleChange} required rows={3} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Intro Image *</label>
-                <input name="mainContentImage" type="url" value={formData.mainContentImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Intro Image * (Max 5MB)</label>
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'mainContentImage')} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" />
+                {formData.mainContentImage && <p className="text-xs text-green-600 mt-1">✓ {formData.mainContentImage.name}</p>}
               </div>
 
               {/* What Causes */}
@@ -226,8 +289,9 @@ export default function AddProductForm() {
                 <textarea name="whatCauses" value={formData.whatCauses} onChange={handleChange} required rows={4} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Causes Image *</label>
-                <input name="whatCausesImage" type="url" value={formData.whatCausesImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Causes Image * (Max 5MB)</label>
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'whatCausesImage')} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-100 file:text-green-700 hover:file:bg-green-200" />
+                {formData.whatCausesImage && <p className="text-xs text-green-600 mt-1">✓ {formData.whatCausesImage.name}</p>}
               </div>
 
               {/* Health Risks */}
@@ -236,8 +300,9 @@ export default function AddProductForm() {
                 <textarea name="healthRisks" value={formData.healthRisks} onChange={handleChange} required rows={4} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Risks Image *</label>
-                <input name="healthRisksImage" type="url" value={formData.healthRisksImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Risks Image * (Max 5MB)</label>
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'healthRisksImage')} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-red-100 file:text-red-700 hover:file:bg-red-200" />
+                {formData.healthRisksImage && <p className="text-xs text-green-600 mt-1">✓ {formData.healthRisksImage.name}</p>}
               </div>
 
               {/* Strategies */}
@@ -246,8 +311,9 @@ export default function AddProductForm() {
                 <textarea name="strategies" value={formData.strategies} onChange={handleChange} required rows={4} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Strategies Image *</label>
-                <input name="strategiesImage" type="url" value={formData.strategiesImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Strategies Image * (Max 5MB)</label>
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'strategiesImage')} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-100 file:text-yellow-700 hover:file:bg-yellow-200" />
+                {formData.strategiesImage && <p className="text-xs text-green-600 mt-1">✓ {formData.strategiesImage.name}</p>}
               </div>
 
               {/* Conclusion */}
@@ -256,8 +322,9 @@ export default function AddProductForm() {
                 <textarea name="conclusion" value={formData.conclusion} onChange={handleChange} required rows={3} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion Image *</label>
-                <input name="conclusionImage" type="url" value={formData.conclusionImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion Image * (Max 5MB)</label>
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'conclusionImage')} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200" />
+                {formData.conclusionImage && <p className="text-xs text-green-600 mt-1">✓ {formData.conclusionImage.name}</p>}
               </div>
             </div>
           </details>
