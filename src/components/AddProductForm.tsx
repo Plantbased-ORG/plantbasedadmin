@@ -2,24 +2,21 @@
 
 import { useState } from 'react';
 
-interface ProductSection {
-  title: string;
-  content: string;
-  image?: string;
-}
-
 export default function AddProductForm() {
   const [formData, setFormData] = useState({
     name: '',
     shortDescription: '',
     mainImage: '',
-    fullDescription: '',
-    sections: [] as ProductSection[]
-  });
-  const [currentSection, setCurrentSection] = useState<ProductSection>({
-    title: '',
-    content: '',
-    image: ''
+    introDescription: '',
+    mainContentImage: '',
+    whatCauses: '',
+    whatCausesImage: '',
+    healthRisks: '',
+    healthRisksImage: '',
+    strategies: '',
+    strategiesImage: '',
+    conclusion: '',
+    conclusionImage: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -29,30 +26,6 @@ export default function AddProductForm() {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
-    }));
-  };
-
-  const handleSectionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setCurrentSection(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
-  const addSection = () => {
-    if (currentSection.title && currentSection.content) {
-      setFormData(prev => ({
-        ...prev,
-        sections: [...prev.sections, currentSection]
-      }));
-      setCurrentSection({ title: '', content: '', image: '' });
-    }
-  };
-
-  const removeSection = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      sections: prev.sections.filter((_, i) => i !== index)
     }));
   };
 
@@ -76,8 +49,16 @@ export default function AddProductForm() {
         name: '',
         shortDescription: '',
         mainImage: '',
-        fullDescription: '',
-        sections: []
+        introDescription: '',
+        mainContentImage: '',
+        whatCauses: '',
+        whatCausesImage: '',
+        healthRisks: '',
+        healthRisksImage: '',
+        strategies: '',
+        strategiesImage: '',
+        conclusion: '',
+        conclusionImage: ''
       });
       setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
@@ -96,137 +77,254 @@ export default function AddProductForm() {
           </svg>
           Add New Healing Program
         </h3>
-        <p className="text-sm text-gray-500 mt-1">Add disease/condition programs with detailed content</p>
+        <p className="text-sm text-gray-500 mt-1">All programs follow the same structure</p>
       </div>
 
       <div className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-gray-900">Basic Information</h4>
+          {/* Card Display Info */}
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900 mb-3">Card Display (Programs List)</h4>
             
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Program Name *
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
-                placeholder="e.g., Obesity, HIV/AIDS, Cancer"
-              />
-            </div>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Program Name *
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900"
+                  placeholder="e.g., Obesity"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="mainImage" className="block text-sm font-medium text-gray-700 mb-2">
-                Main Image URL *
-              </label>
-              <input
-                id="mainImage"
-                name="mainImage"
-                type="url"
-                value={formData.mainImage}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
+              <div>
+                <label htmlFor="mainImage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Card Image URL *
+                </label>
+                <input
+                  id="mainImage"
+                  name="mainImage"
+                  type="url"
+                  value={formData.mainImage}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="shortDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                Short Description * (Shows on card)
-              </label>
-              <textarea
-                id="shortDescription"
-                name="shortDescription"
-                value={formData.shortDescription}
-                onChange={handleChange}
-                required
-                rows={2}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 resize-none"
-                placeholder="Brief description for the card..."
-              />
-            </div>
-
-            <div>
-              <label htmlFor="fullDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                Full Description * (Intro on detail page)
-              </label>
-              <textarea
-                id="fullDescription"
-                name="fullDescription"
-                value={formData.fullDescription}
-                onChange={handleChange}
-                required
-                rows={4}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 resize-none"
-                placeholder="Full description that appears at the top of the detail page..."
-              />
+              <div>
+                <label htmlFor="shortDescription" className="block text-sm font-medium text-gray-700 mb-2">
+                  Short Description * (Shows on card)
+                </label>
+                <textarea
+                  id="shortDescription"
+                  name="shortDescription"
+                  value={formData.shortDescription}
+                  onChange={handleChange}
+                  required
+                  rows={2}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900 resize-none"
+                  placeholder="Obesity has become a global health concern, affecting millions of people..."
+                />
+              </div>
             </div>
           </div>
 
-          {/* Content Sections */}
-          <div className="border-t pt-6 space-y-4">
-            <h4 className="font-medium text-gray-900">Content Sections</h4>
-            <p className="text-sm text-gray-500">Add sections like &quot;What Causes Obesity?&quot;, &quot;Health Risks&quot;, etc.</p>
-
-            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-              <input
-                name="title"
-                type="text"
-                value={currentSection.title}
-                onChange={handleSectionChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
-                placeholder="Section title (e.g., What Causes Obesity?)"
-              />
-              <textarea
-                name="content"
-                value={currentSection.content}
-                onChange={handleSectionChange}
-                rows={3}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 resize-none"
-                placeholder="Section content..."
-              />
-              <input
-                name="image"
-                type="url"
-                value={currentSection.image}
-                onChange={handleSectionChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900"
-                placeholder="Section image URL (optional)"
-              />
-              <button
-                type="button"
-                onClick={addSection}
-                className="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-lg transition"
-              >
-                Add Section
-              </button>
+          {/* Detail Page Content */}
+          <div className="border-t pt-6">
+            <h4 className="font-medium text-gray-900 mb-4">Detail Page Content</h4>
+            
+            {/* Intro Section */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <h5 className="font-medium text-gray-900 mb-3">Introduction Section</h5>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="introDescription" className="block text-sm font-medium text-gray-700 mb-2">
+                    Introduction Text *
+                  </label>
+                  <textarea
+                    id="introDescription"
+                    name="introDescription"
+                    value={formData.introDescription}
+                    onChange={handleChange}
+                    required
+                    rows={4}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition text-gray-900 resize-none"
+                    placeholder="Full introduction that appears at the top..."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="mainContentImage" className="block text-sm font-medium text-gray-700 mb-2">
+                    Main Content Image URL *
+                  </label>
+                  <input
+                    id="mainContentImage"
+                    name="mainContentImage"
+                    type="url"
+                    value={formData.mainContentImage}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition text-gray-900"
+                    placeholder="https://example.com/main-image.jpg"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Display Added Sections */}
-            {formData.sections.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">Added Sections:</p>
-                {formData.sections.map((section, index) => (
-                  <div key={index} className="flex items-center justify-between bg-purple-50 p-3 rounded-lg">
-                    <span className="text-sm text-gray-900">{section.title}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeSection(index)}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+            {/* What Causes Section */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <h5 className="font-medium text-gray-900 mb-3">What Causes {formData.name || '[Program Name]'}?</h5>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="whatCauses" className="block text-sm font-medium text-gray-700 mb-2">
+                    Content * (Use bullet points or paragraphs)
+                  </label>
+                  <textarea
+                    id="whatCauses"
+                    name="whatCauses"
+                    value={formData.whatCauses}
+                    onChange={handleChange}
+                    required
+                    rows={6}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 transition text-gray-900 resize-none"
+                    placeholder="Explain what causes this condition..."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="whatCausesImage" className="block text-sm font-medium text-gray-700 mb-2">
+                    Section Image URL *
+                  </label>
+                  <input
+                    id="whatCausesImage"
+                    name="whatCausesImage"
+                    type="url"
+                    value={formData.whatCausesImage}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 transition text-gray-900"
+                    placeholder="https://example.com/causes-image.jpg"
+                  />
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Health Risks Section */}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <h5 className="font-medium text-gray-900 mb-3">Health Risks Associated with {formData.name || '[Program Name]'}</h5>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="healthRisks" className="block text-sm font-medium text-gray-700 mb-2">
+                    Content * (Use bullet points or paragraphs)
+                  </label>
+                  <textarea
+                    id="healthRisks"
+                    name="healthRisks"
+                    value={formData.healthRisks}
+                    onChange={handleChange}
+                    required
+                    rows={6}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 transition text-gray-900 resize-none"
+                    placeholder="Explain the health risks..."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="healthRisksImage" className="block text-sm font-medium text-gray-700 mb-2">
+                    Section Image URL *
+                  </label>
+                  <input
+                    id="healthRisksImage"
+                    name="healthRisksImage"
+                    type="url"
+                    value={formData.healthRisksImage}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 transition text-gray-900"
+                    placeholder="https://example.com/risks-image.jpg"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Strategies Section */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <h5 className="font-medium text-gray-900 mb-3">Strategies for Managing and Preventing {formData.name || '[Program Name]'}</h5>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="strategies" className="block text-sm font-medium text-gray-700 mb-2">
+                    Content * (Use numbered lists or paragraphs)
+                  </label>
+                  <textarea
+                    id="strategies"
+                    name="strategies"
+                    value={formData.strategies}
+                    onChange={handleChange}
+                    required
+                    rows={6}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 transition text-gray-900 resize-none"
+                    placeholder="Explain strategies for managing and preventing..."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="strategiesImage" className="block text-sm font-medium text-gray-700 mb-2">
+                    Section Image URL *
+                  </label>
+                  <input
+                    id="strategiesImage"
+                    name="strategiesImage"
+                    type="url"
+                    value={formData.strategiesImage}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 transition text-gray-900"
+                    placeholder="https://example.com/strategies-image.jpg"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Conclusion Section */}
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <h5 className="font-medium text-gray-900 mb-3">Conclusion</h5>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="conclusion" className="block text-sm font-medium text-gray-700 mb-2">
+                    Conclusion Text *
+                  </label>
+                  <textarea
+                    id="conclusion"
+                    name="conclusion"
+                    value={formData.conclusion}
+                    onChange={handleChange}
+                    required
+                    rows={4}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900 resize-none"
+                    placeholder="Write the conclusion..."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="conclusionImage" className="block text-sm font-medium text-gray-700 mb-2">
+                    Conclusion Image URL *
+                  </label>
+                  <input
+                    id="conclusionImage"
+                    name="conclusionImage"
+                    type="url"
+                    value={formData.conclusionImage}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900"
+                    placeholder="https://example.com/conclusion-image.jpg"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {error && (
@@ -246,6 +344,12 @@ export default function AddProductForm() {
               <span>{success}</span>
             </div>
           )}
+
+          <div className="bg-gray-100 p-4 rounded-lg">
+            <p className="text-sm text-gray-600">
+              <strong>Note:</strong> Reviews section will automatically display at the bottom of each program detail page.
+            </p>
+          </div>
 
           <button
             type="submit"
