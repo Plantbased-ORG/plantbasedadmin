@@ -2,6 +2,13 @@
 
 import { useState } from 'react';
 
+interface PricingPlan {
+  name: string;
+  subtitle: string;
+  price: string;
+  features: string[];
+}
+
 export default function AddProductForm() {
   const [formData, setFormData] = useState({
     name: '',
@@ -16,8 +23,17 @@ export default function AddProductForm() {
     strategies: '',
     strategiesImage: '',
     conclusion: '',
-    conclusionImage: ''
+    conclusionImage: '',
+    pricingPlans: [] as PricingPlan[]
   });
+
+  const [currentPlan, setCurrentPlan] = useState<PricingPlan>({
+    name: '',
+    subtitle: '',
+    price: '',
+    features: []
+  });
+  const [currentFeature, setCurrentFeature] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -29,10 +45,60 @@ export default function AddProductForm() {
     }));
   };
 
+  const handlePlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentPlan(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const addFeature = () => {
+    if (currentFeature.trim()) {
+      setCurrentPlan(prev => ({
+        ...prev,
+        features: [...prev.features, currentFeature.trim()]
+      }));
+      setCurrentFeature('');
+    }
+  };
+
+  const removeFeature = (index: number) => {
+    setCurrentPlan(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addPricingPlan = () => {
+    if (currentPlan.name && currentPlan.subtitle && currentPlan.price && currentPlan.features.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        pricingPlans: [...prev.pricingPlans, currentPlan]
+      }));
+      setCurrentPlan({ name: '', subtitle: '', price: '', features: [] });
+    } else {
+      setError('Please fill all pricing plan fields and add at least one feature');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const removePricingPlan = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      pricingPlans: prev.pricingPlans.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    if (formData.pricingPlans.length === 0) {
+      setError('Please add at least one pricing plan');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -44,7 +110,7 @@ export default function AddProductForm() {
 
       if (!response.ok) throw new Error('Failed to add program');
 
-      setSuccess('Program added successfully!');
+      setSuccess('Program with pricing plans added successfully!');
       setFormData({
         name: '',
         shortDescription: '',
@@ -58,7 +124,8 @@ export default function AddProductForm() {
         strategies: '',
         strategiesImage: '',
         conclusion: '',
-        conclusionImage: ''
+        conclusionImage: '',
+        pricingPlans: []
       });
       setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
@@ -77,14 +144,14 @@ export default function AddProductForm() {
           </svg>
           Add New Healing Program
         </h3>
-        <p className="text-sm text-gray-500 mt-1">All programs follow the same structure</p>
+        <p className="text-sm text-gray-500 mt-1">Add program details and its pricing plans</p>
       </div>
 
       <div className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Card Display Info */}
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 mb-3">Card Display (Programs List)</h4>
+            <h4 className="font-medium text-gray-900 mb-3">Card Display</h4>
             
             <div className="space-y-4">
               <div>
@@ -121,7 +188,7 @@ export default function AddProductForm() {
 
               <div>
                 <label htmlFor="shortDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                  Short Description * (Shows on card)
+                  Short Description *
                 </label>
                 <textarea
                   id="shortDescription"
@@ -131,242 +198,176 @@ export default function AddProductForm() {
                   required
                   rows={2}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900 resize-none"
-                  placeholder="Obesity has become a global health concern, affecting millions of people..."
+                  placeholder="Brief description..."
                 />
               </div>
             </div>
           </div>
 
-          {/* Detail Page Content */}
+          {/* Detail Page Content - Collapsed for brevity */}
+          <details className="border border-gray-200 rounded-lg">
+            <summary className="px-4 py-3 cursor-pointer font-medium text-gray-900 hover:bg-gray-50">
+              Program Detail Content (Click to expand)
+            </summary>
+            <div className="p-4 space-y-4 border-t">
+              {/* Introduction */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Introduction *</label>
+                <textarea name="introDescription" value={formData.introDescription} onChange={handleChange} required rows={3} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Intro Image *</label>
+                <input name="mainContentImage" type="url" value={formData.mainContentImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+              </div>
+
+              {/* What Causes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">What Causes {formData.name || '...'}? *</label>
+                <textarea name="whatCauses" value={formData.whatCauses} onChange={handleChange} required rows={4} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Causes Image *</label>
+                <input name="whatCausesImage" type="url" value={formData.whatCausesImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+              </div>
+
+              {/* Health Risks */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Health Risks *</label>
+                <textarea name="healthRisks" value={formData.healthRisks} onChange={handleChange} required rows={4} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Risks Image *</label>
+                <input name="healthRisksImage" type="url" value={formData.healthRisksImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+              </div>
+
+              {/* Strategies */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Strategies *</label>
+                <textarea name="strategies" value={formData.strategies} onChange={handleChange} required rows={4} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Strategies Image *</label>
+                <input name="strategiesImage" type="url" value={formData.strategiesImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+              </div>
+
+              {/* Conclusion */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion *</label>
+                <textarea name="conclusion" value={formData.conclusion} onChange={handleChange} required rows={3} className="w-full px-4 py-2.5 border rounded-lg text-gray-900 resize-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion Image *</label>
+                <input name="conclusionImage" type="url" value={formData.conclusionImage} onChange={handleChange} required className="w-full px-4 py-2.5 border rounded-lg text-gray-900" />
+              </div>
+            </div>
+          </details>
+
+          {/* Pricing Plans Section */}
           <div className="border-t pt-6">
-            <h4 className="font-medium text-gray-900 mb-4">Detail Page Content</h4>
+            <h4 className="font-medium text-gray-900 mb-4">Pricing Plans for {formData.name || 'this program'}</h4>
             
-            {/* Intro Section */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <h5 className="font-medium text-gray-900 mb-3">Introduction Section</h5>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="introDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                    Introduction Text *
-                  </label>
-                  <textarea
-                    id="introDescription"
-                    name="introDescription"
-                    value={formData.introDescription}
-                    onChange={handleChange}
-                    required
-                    rows={4}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition text-gray-900 resize-none"
-                    placeholder="Full introduction that appears at the top..."
-                  />
-                </div>
-                <div>
-                  <label htmlFor="mainContentImage" className="block text-sm font-medium text-gray-700 mb-2">
-                    Main Content Image URL *
-                  </label>
-                  <input
-                    id="mainContentImage"
-                    name="mainContentImage"
-                    type="url"
-                    value={formData.mainContentImage}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition text-gray-900"
-                    placeholder="https://example.com/main-image.jpg"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* What Causes Section */}
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <h5 className="font-medium text-gray-900 mb-3">What Causes {formData.name || '[Program Name]'}?</h5>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="whatCauses" className="block text-sm font-medium text-gray-700 mb-2">
-                    Content * (Use bullet points or paragraphs)
-                  </label>
-                  <textarea
-                    id="whatCauses"
-                    name="whatCauses"
-                    value={formData.whatCauses}
-                    onChange={handleChange}
-                    required
-                    rows={6}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 transition text-gray-900 resize-none"
-                    placeholder="Explain what causes this condition..."
-                  />
-                </div>
-                <div>
-                  <label htmlFor="whatCausesImage" className="block text-sm font-medium text-gray-700 mb-2">
-                    Section Image URL *
-                  </label>
+              <h5 className="font-medium text-gray-900 mb-3">Add Pricing Plan</h5>
+              
+              <div className="space-y-3">
+                <input
+                  name="name"
+                  type="text"
+                  value={currentPlan.name}
+                  onChange={handlePlanChange}
+                  className="w-full px-4 py-2.5 border rounded-lg text-gray-900"
+                  placeholder="Plan name (e.g., Basic)"
+                />
+                <input
+                  name="subtitle"
+                  type="text"
+                  value={currentPlan.subtitle}
+                  onChange={handlePlanChange}
+                  className="w-full px-4 py-2.5 border rounded-lg text-gray-900"
+                  placeholder="Subtitle (e.g., Your foundation for a healthier life!)"
+                />
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₦</span>
                   <input
-                    id="whatCausesImage"
-                    name="whatCausesImage"
-                    type="url"
-                    value={formData.whatCausesImage}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 transition text-gray-900"
-                    placeholder="https://example.com/causes-image.jpg"
+                    name="price"
+                    type="text"
+                    value={currentPlan.price}
+                    onChange={handlePlanChange}
+                    className="w-full pl-8 pr-4 py-2.5 border rounded-lg text-gray-900"
+                    placeholder="500,000.00"
                   />
                 </div>
+
+                {/* Features */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Features</label>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={currentFeature}
+                      onChange={(e) => setCurrentFeature(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
+                      className="flex-1 px-4 py-2 border rounded-lg text-gray-900"
+                      placeholder="Add feature"
+                    />
+                    <button type="button" onClick={addFeature} className="px-4 py-2 bg-gray-700 text-white rounded-lg">
+                      Add
+                    </button>
+                  </div>
+                  
+                  {currentPlan.features.length > 0 && (
+                    <div className="space-y-1 mb-2">
+                      {currentPlan.features.map((feature, index) => (
+                        <div key={index} className="flex items-center justify-between bg-white p-2 rounded text-sm">
+                          <span>• {feature}</span>
+                          <button type="button" onClick={() => removeFeature(index)} className="text-red-600 text-xs">Remove</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <button type="button" onClick={addPricingPlan} className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg">
+                  Add This Pricing Plan
+                </button>
               </div>
             </div>
 
-            {/* Health Risks Section */}
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <h5 className="font-medium text-gray-900 mb-3">Health Risks Associated with {formData.name || '[Program Name]'}</h5>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="healthRisks" className="block text-sm font-medium text-gray-700 mb-2">
-                    Content * (Use bullet points or paragraphs)
-                  </label>
-                  <textarea
-                    id="healthRisks"
-                    name="healthRisks"
-                    value={formData.healthRisks}
-                    onChange={handleChange}
-                    required
-                    rows={6}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 transition text-gray-900 resize-none"
-                    placeholder="Explain the health risks..."
-                  />
-                </div>
-                <div>
-                  <label htmlFor="healthRisksImage" className="block text-sm font-medium text-gray-700 mb-2">
-                    Section Image URL *
-                  </label>
-                  <input
-                    id="healthRisksImage"
-                    name="healthRisksImage"
-                    type="url"
-                    value={formData.healthRisksImage}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 transition text-gray-900"
-                    placeholder="https://example.com/risks-image.jpg"
-                  />
-                </div>
+            {/* Added Plans */}
+            {formData.pricingPlans.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">Added Plans ({formData.pricingPlans.length}):</p>
+                {formData.pricingPlans.map((plan, index) => (
+                  <div key={index} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+                    <div>
+                      <span className="font-medium">{plan.name}</span> - ₦{plan.price}
+                      <p className="text-xs text-gray-600">{plan.features.length} features</p>
+                    </div>
+                    <button type="button" onClick={() => removePricingPlan(index)} className="text-red-600 text-sm">Remove</button>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            {/* Strategies Section */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <h5 className="font-medium text-gray-900 mb-3">Strategies for Managing and Preventing {formData.name || '[Program Name]'}</h5>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="strategies" className="block text-sm font-medium text-gray-700 mb-2">
-                    Content * (Use numbered lists or paragraphs)
-                  </label>
-                  <textarea
-                    id="strategies"
-                    name="strategies"
-                    value={formData.strategies}
-                    onChange={handleChange}
-                    required
-                    rows={6}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 transition text-gray-900 resize-none"
-                    placeholder="Explain strategies for managing and preventing..."
-                  />
-                </div>
-                <div>
-                  <label htmlFor="strategiesImage" className="block text-sm font-medium text-gray-700 mb-2">
-                    Section Image URL *
-                  </label>
-                  <input
-                    id="strategiesImage"
-                    name="strategiesImage"
-                    type="url"
-                    value={formData.strategiesImage}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 transition text-gray-900"
-                    placeholder="https://example.com/strategies-image.jpg"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Conclusion Section */}
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <h5 className="font-medium text-gray-900 mb-3">Conclusion</h5>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="conclusion" className="block text-sm font-medium text-gray-700 mb-2">
-                    Conclusion Text *
-                  </label>
-                  <textarea
-                    id="conclusion"
-                    name="conclusion"
-                    value={formData.conclusion}
-                    onChange={handleChange}
-                    required
-                    rows={4}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900 resize-none"
-                    placeholder="Write the conclusion..."
-                  />
-                </div>
-                <div>
-                  <label htmlFor="conclusionImage" className="block text-sm font-medium text-gray-700 mb-2">
-                    Conclusion Image URL *
-                  </label>
-                  <input
-                    id="conclusionImage"
-                    name="conclusionImage"
-                    type="url"
-                    value={formData.conclusionImage}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition text-gray-900"
-                    placeholder="https://example.com/conclusion-image.jpg"
-                  />
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
-              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <span>{error}</span>
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
             </div>
           )}
 
           {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
-              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span>{success}</span>
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+              {success}
             </div>
           )}
-
-          <div className="bg-gray-100 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">
-              <strong>Note:</strong> Reviews section will automatically display at the bottom of each program detail page.
-            </p>
-          </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 px-4 rounded-lg transition disabled:opacity-50"
           >
-            {isLoading ? (
-              <>
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Adding Program...
-              </>
-            ) : (
-              'Add Program'
-            )}
+            {isLoading ? 'Adding Program...' : 'Add Complete Program'}
           </button>
         </form>
       </div>
