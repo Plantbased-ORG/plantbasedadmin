@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+const API_URL = 'https://plantbased-backend.onrender.com/api/v1';
+
 export default function AddReviewForm() {
   const [formData, setFormData] = useState({
     name: '',
@@ -20,16 +22,27 @@ export default function AddReviewForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/testimonials', {
+      // Get auth token
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('Please login first');
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/testimonials`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to add review');
+        throw new Error(data.error || data.message || 'Failed to add review');
       }
 
       setSuccess('Review added successfully!');
