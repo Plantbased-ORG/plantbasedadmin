@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+const API_URL = 'https://plantbased-backend.onrender.com/api/v1';
+
 export default function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -10,47 +12,66 @@ export default function ChangePasswordForm() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    setIsLoading(true);
 
-    const storedPassword = localStorage.getItem('userPassword') || 'admin123';
-
-    if (currentPassword !== storedPassword) {
-      setError('Current password is incorrect');
-      setIsLoading(false);
-      return;
-    }
-
+    // Frontend validation
     if (newPassword.length < 6) {
       setError('New password must be at least 6 characters long');
-      setIsLoading(false);
       return;
     }
 
     if (newPassword !== confirmPassword) {
       setError('New password and confirmation do not match');
-      setIsLoading(false);
       return;
     }
 
     if (newPassword === currentPassword) {
       setError('New password must be different from current password');
-      setIsLoading(false);
       return;
     }
 
-    setTimeout(() => {
-      localStorage.setItem('userPassword', newPassword);
+    setIsLoading(true);
+
+    try {
+      // Get auth token
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('Please login first');
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/admin/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to change password');
+      }
+
       setSuccess('Password changed successfully!');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setIsLoading(false);
       setTimeout(() => setSuccess(''), 5000);
-    }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClear = () => {
