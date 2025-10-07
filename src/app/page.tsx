@@ -132,9 +132,7 @@ export default function LoginPage() {
           {/* Credentials Info */}
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
             <p className="text-xs text-blue-200 text-center">
-              <strong>Admin Credentials:</strong><br />
-              Email: siddhsaanv@gmail.com<br />
-              Password: 678yug
+              <strong>WELCOME</strong>
             </p>
           </div>
         </div>
