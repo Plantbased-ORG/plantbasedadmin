@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const API_URL = 'https://plantbased-backend.onrender.com/api/v1';
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,16 +17,36 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
 
-    // Mock authentication - replace with real auth later
-    if (email === 'admin@example.com' && password === 'admin123') {
-      // Store auth token in localStorage (mock)
-      localStorage.setItem('authToken', 'mock-token-12345');
-      localStorage.setItem('userEmail', email);
-      
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Store tokens and user info in localStorage
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('refreshToken', data.refresh_token);
+      localStorage.setItem('userEmail', data.admin.email);
+      localStorage.setItem('userName', data.admin.full_name);
+      localStorage.setItem('userId', data.admin.id.toString());
+
       // Redirect to dashboard
       router.push('/dashboard');
-    } else {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -107,12 +129,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Mock Credentials Info */}
+          {/* Credentials Info */}
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
             <p className="text-xs text-blue-200 text-center">
-              <strong>Mock Credentials:</strong><br />
-              Email: admin@example.com<br />
-              Password: admin123
+              <strong>Admin Credentials:</strong><br />
+              Email: siddhsaanv@gmail.com<br />
+              Password: 678yug
             </p>
           </div>
         </div>
