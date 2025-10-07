@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+const API_URL = 'https://plantbased-backend.onrender.com/api/v1';
+
 interface PricingPlan {
   name: string;
   subtitle: string;
@@ -135,6 +137,14 @@ export default function AddProductForm() {
     setIsLoading(true);
 
     try {
+      // Get auth token
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('Please login first');
+        setIsLoading(false);
+        return;
+      }
+
       // Create FormData for file upload
       const submitData = new FormData();
       
@@ -156,12 +166,19 @@ export default function AddProductForm() {
       if (formData.strategiesImage) submitData.append('strategiesImage', formData.strategiesImage);
       if (formData.conclusionImage) submitData.append('conclusionImage', formData.conclusionImage);
 
-      const response = await fetch('/api/programs', {
+      const response = await fetch(`${API_URL}/programs`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: submitData,
       });
 
-      if (!response.ok) throw new Error('Failed to add program');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to add program');
+      }
 
       setSuccess('Program with pricing plans added successfully!');
       setFormData({
