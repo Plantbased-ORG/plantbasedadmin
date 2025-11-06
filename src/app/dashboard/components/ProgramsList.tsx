@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const API_URL = 'https://plantbased-backend.onrender.com/api/v1';
 
@@ -12,9 +13,20 @@ interface Program {
   created_at: string;
 }
 
+interface PricingPlan {
+  id: number;
+  program_id: number;
+  name: string;
+  subtitle: string;
+  price: string;
+  features: string[];
+  created_at: string;
+  updated_at: string;
+}
+
 interface ProgramWithPlans {
   program: Program;
-  pricing_plans: any[];
+  pricing_plans: PricingPlan[];
 }
 
 interface ProgramsListProps {
@@ -121,11 +133,14 @@ export default function ProgramsList({ onEdit }: ProgramsListProps) {
             {programs.map((program) => (
               <div key={program.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                 <div className="flex items-start gap-4">
-                  <img 
-                    src={program.main_image_url} 
-                    alt={program.name}
-                    className="w-20 h-20 object-cover rounded-lg"
-                  />
+                  <div className="relative w-20 h-20 flex-shrink-0">
+                    <Image 
+                      src={program.main_image_url} 
+                      alt={program.name}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900 mb-1">{program.name}</h4>
                     <p className="text-sm text-gray-600 mb-2">{program.short_description}</p>
