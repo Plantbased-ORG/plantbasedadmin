@@ -8,8 +8,13 @@ interface Program {
   id: number;
   name: string;
   short_description: string;
-  main_image: string;
+  main_image_url: string;
   created_at: string;
+}
+
+interface ProgramWithPlans {
+  program: Program;
+  pricing_plans: any[];
 }
 
 interface ProgramsListProps {
@@ -24,11 +29,13 @@ export default function ProgramsList({ onEdit }: ProgramsListProps) {
   const fetchPrograms = async () => {
     try {
       const response = await fetch(`${API_URL}/programs`);
-      const data = await response.json();
+      const data: ProgramWithPlans[] = await response.json();
       
       if (!response.ok) throw new Error('Failed to fetch programs');
       
-      setPrograms(data.data || []);
+      // Extract just the program objects from the response
+      const programsList = data.map(item => item.program);
+      setPrograms(programsList);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load programs');
     } finally {
@@ -115,7 +122,7 @@ export default function ProgramsList({ onEdit }: ProgramsListProps) {
               <div key={program.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                 <div className="flex items-start gap-4">
                   <img 
-                    src={program.main_image} 
+                    src={program.main_image_url} 
                     alt={program.name}
                     className="w-20 h-20 object-cover rounded-lg"
                   />
