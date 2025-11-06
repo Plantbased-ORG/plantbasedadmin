@@ -8,10 +8,29 @@ import AddReviewForm from '@/components/AddReviewForm';
 import AddProductForm from '@/components/AddProductForm';
 import ProgramsList from './components/ProgramsList';
 
+interface Program {
+  id: number;
+  name: string;
+  short_description: string;
+  main_image_url: string;
+  intro_description: string;
+  main_content_image_url: string;
+  what_causes: string;
+  what_causes_image_url: string;
+  health_risks: string;
+  health_risks_image_url: string;
+  strategies: string;
+  strategies_image_url: string;
+  conclusion: string;
+  conclusion_image_url: string;
+  created_at: string;
+}
+
 export default function DashboardPage() {
   const [userEmail, setUserEmail] = useState('');
   const [activeTab, setActiveTab] = useState<'programs' | 'reviews' | 'password'>('programs');
   const [programView, setProgramView] = useState<'list' | 'add'>('list');
+  const [selectedProgram, setSelectedProgram] = useState<Program | undefined>(undefined);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,8 +51,13 @@ export default function DashboardPage() {
     router.push('/');
   };
 
-  const handleEditProgram = () => {
-    alert('Edit functionality coming soon!');
+  const handleEditProgram = (program: Program) => {
+    setSelectedProgram(program);
+    setProgramView('add');
+  };
+
+  const handleAddNewProgram = () => {
+    setSelectedProgram(undefined);
     setProgramView('add');
   };
 
@@ -114,7 +138,7 @@ export default function DashboardPage() {
                 View All Programs
               </button>
               <button
-                onClick={() => setProgramView('add')}
+                onClick={handleAddNewProgram}
                 className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
                   programView === 'add'
                     ? 'bg-purple-600 text-white'
@@ -129,26 +153,12 @@ export default function DashboardPage() {
             {programView === 'list' ? (
               <ProgramsList onEdit={handleEditProgram} />
             ) : (
-              <AddProductForm />
+              <AddProductForm editProgram={selectedProgram} />
             )}
           </div>
         )}
         {activeTab === 'reviews' && <AddReviewForm />}
         {activeTab === 'password' && <ChangePasswordForm />}
-
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex gap-3">
-            <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <div>
-              <h4 className="text-sm font-medium text-blue-900 mb-1">Mock System Active</h4>
-              <p className="text-sm text-blue-700">
-                Data is stored in memory. Connect a real database for persistence.
-              </p>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );

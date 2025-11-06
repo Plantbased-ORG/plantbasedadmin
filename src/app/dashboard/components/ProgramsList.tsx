@@ -10,6 +10,16 @@ interface Program {
   name: string;
   short_description: string;
   main_image_url: string;
+  intro_description: string;
+  main_content_image_url: string;
+  what_causes: string;
+  what_causes_image_url: string;
+  health_risks: string;
+  health_risks_image_url: string;
+  strategies: string;
+  strategies_image_url: string;
+  conclusion: string;
+  conclusion_image_url: string;
   created_at: string;
 }
 
