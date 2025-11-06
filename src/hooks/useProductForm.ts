@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const API_URL = 'https://plantbased-backend.onrender.com/api/v1';
 
@@ -28,7 +28,30 @@ interface FormData {
   pricingPlans: PricingPlan[];
 }
 
-export default function useProductForm() {
+interface Program {
+  id: number;
+  name: string;
+  short_description: string;
+  main_image_url: string;
+  intro_description: string;
+  main_content_image_url: string;
+  what_causes: string;
+  what_causes_image_url: string;
+  health_risks: string;
+  health_risks_image_url: string;
+  strategies: string;
+  strategies_image_url: string;
+  conclusion: string;
+  conclusion_image_url: string;
+  created_at: string;
+}
+
+interface UseProductFormProps {
+  programId?: number;
+  initialProgram?: Program;
+}
+
+export default function useProductForm({ programId, initialProgram }: UseProductFormProps = {}) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     shortDescription: '',
@@ -49,6 +72,29 @@ export default function useProductForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const isEditMode = !!programId;
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (initialProgram) {
+      setFormData({
+        name: initialProgram.name,
+        shortDescription: initialProgram.short_description,
+        mainImage: null, // Keep as null, we'll use existing image URL
+        introDescription: initialProgram.intro_description,
+        mainContentImage: null,
+        whatCauses: initialProgram.what_causes,
+        whatCausesImage: null,
+        healthRisks: initialProgram.health_risks,
+        healthRisksImage: null,
+        strategies: initialProgram.strategies,
+        strategiesImage: null,
+        conclusion: initialProgram.conclusion,
+        conclusionImage: null,
+        pricingPlans: []
+      });
+    }
+  }, [initialProgram]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
@@ -72,7 +118,6 @@ export default function useProductForm() {
   };
 
   const editPricingPlan = (index: number) => {
-    // TODO: Implement edit functionality
     alert('Edit functionality coming soon!');
   };
 
@@ -117,12 +162,15 @@ export default function useProductForm() {
       return;
     }
 
-    const imageFields = ['mainImage', 'mainContentImage', 'whatCausesImage', 'healthRisksImage', 'strategiesImage', 'conclusionImage'];
-    const missingImages = imageFields.filter(field => !formData[field as keyof FormData]);
-    
-    if (missingImages.length > 0) {
-      setError('Please upload all required images');
-      return;
+    // For edit mode, images are optional (only if changing)
+    if (!isEditMode) {
+      const imageFields = ['mainImage', 'mainContentImage', 'whatCausesImage', 'healthRisksImage', 'strategiesImage', 'conclusionImage'];
+      const missingImages = imageFields.filter(field => !formData[field as keyof FormData]);
+      
+      if (missingImages.length > 0) {
+        setError('Please upload all required images');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -146,6 +194,7 @@ export default function useProductForm() {
       submitData.append('conclusion', formData.conclusion);
       submitData.append('pricingPlans', JSON.stringify(formData.pricingPlans));
 
+      // Only append images if they were changed
       if (formData.mainImage) submitData.append('mainImage', formData.mainImage);
       if (formData.mainContentImage) submitData.append('mainContentImage', formData.mainContentImage);
       if (formData.whatCausesImage) submitData.append('whatCausesImage', formData.whatCausesImage);
@@ -153,8 +202,11 @@ export default function useProductForm() {
       if (formData.strategiesImage) submitData.append('strategiesImage', formData.strategiesImage);
       if (formData.conclusionImage) submitData.append('conclusionImage', formData.conclusionImage);
 
-      const response = await fetch(`${API_URL}/programs`, {
-        method: 'POST',
+      const url = isEditMode ? `${API_URL}/programs/${programId}` : `${API_URL}/programs`;
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -164,11 +216,13 @@ export default function useProductForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to add program');
+        throw new Error(data.error || data.message || `Failed to ${isEditMode ? 'update' : 'add'} program`);
       }
 
-      setSuccess('Program with pricing plans added successfully!');
-      resetForm();
+      setSuccess(`Program ${isEditMode ? 'updated' : 'added'} successfully!`);
+      if (!isEditMode) {
+        resetForm();
+      }
       setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -182,11 +236,13 @@ export default function useProductForm() {
     isLoading,
     success,
     error,
+    isEditMode,
     handleChange,
     handleFileChange,
     addPricingPlan,
     editPricingPlan,
     deletePricingPlan,
-    handleSubmit
+    handleSubmit,
+    resetForm
   };
 }
