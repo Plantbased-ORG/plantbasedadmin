@@ -32,7 +32,7 @@ export default function DashboardPage() {
     router.push('/');
   };
 
-  const handleEditProgram = (program: any) => {
+  const handleEditProgram = () => {
     alert('Edit functionality coming soon!');
     setProgramView('add');
   };
