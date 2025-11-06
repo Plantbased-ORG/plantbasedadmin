@@ -6,10 +6,12 @@ import DashboardHeader from '@/components/DashboardHeader';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 import AddReviewForm from '@/components/AddReviewForm';
 import AddProductForm from '@/components/AddProductForm';
+import ProgramsList from './components/ProgramsList';
 
 export default function DashboardPage() {
   const [userEmail, setUserEmail] = useState('');
   const [activeTab, setActiveTab] = useState<'programs' | 'reviews' | 'password'>('programs');
+  const [programView, setProgramView] = useState<'list' | 'add'>('list');
   const router = useRouter();
 
   useEffect(() => {
@@ -28,6 +30,11 @@ export default function DashboardPage() {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userPassword');
     router.push('/');
+  };
+
+  const handleEditProgram = (program: any) => {
+    alert('Edit functionality coming soon!');
+    setProgramView('add');
   };
 
   return (
@@ -92,7 +99,40 @@ export default function DashboardPage() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'programs' && <AddProductForm />}
+        {activeTab === 'programs' && (
+          <div className="space-y-6">
+            {/* Toggle buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setProgramView('list')}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
+                  programView === 'list'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                }`}
+              >
+                View All Programs
+              </button>
+              <button
+                onClick={() => setProgramView('add')}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
+                  programView === 'add'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                }`}
+              >
+                Add New Program
+              </button>
+            </div>
+
+            {/* Content based on view */}
+            {programView === 'list' ? (
+              <ProgramsList onEdit={handleEditProgram} />
+            ) : (
+              <AddProductForm />
+            )}
+          </div>
+        )}
         {activeTab === 'reviews' && <AddReviewForm />}
         {activeTab === 'password' && <ChangePasswordForm />}
 
